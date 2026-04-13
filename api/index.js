@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
   const { image, style } = req.body;
   
   // Your Token is active
-  const HF_TOKEN = "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"; 
+  const HF_TOKEN = process.env.HF_TOKEN; 
   
   const models = {
     anime: "cagliostrolab/animagine-xl-3.1",
