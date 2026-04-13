@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
 
   try {
     const response = await axios({
-      url: `https://api-inference.huggingface.co/models/${models[style] || models.anime}`,
+      url: `https://router.huggingface.co/hf-inference/models/${models[style] || models.anime}`,
       method: 'POST',
       headers: { 
         Authorization: `Bearer ${HF_TOKEN}`, 
