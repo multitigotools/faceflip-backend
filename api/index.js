@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
 
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
+      "https://https://router.huggingface.co/models/runwayml/stable-diffusion-v1-5",
       {
         method: "POST",
         headers: {
