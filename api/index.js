@@ -19,22 +19,21 @@ module.exports = async (req, res) => {
   };
 
   try {
-    const response = await axios({
-      url: `https://router.huggingface.co/hf-inference/models/${models[style] || models.anime}`,
-      method: 'POST',
-      headers: { 
-        Authorization: `Bearer ${HF_TOKEN}`, 
-        "Content-Type": "application/json" 
-      },
-      data: JSON.stringify({ inputs: image }),
-      responseType: 'arraybuffer'
-    });
-
-    const base64 = Buffer.from(response.data, 'binary').toString('base64');
-    res.status(200).json({ success: true, image: base64 });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "AI Engine Warming Up... Try again in 10 seconds!" });
+    const response = await fetch(
+  "https://api-inference.huggingface.co/models/YOUR_MODEL",
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.HF_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      inputs: image
+    }),
   }
-};
+);
+
+const result = await response.arrayBuffer();
+const base64 = Buffer.from(result).toString("base64");
+
+return res.json({ image: base64 });
