@@ -1,17 +1,25 @@
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   try {
-    const { style } = req.body;
+    const { image, style } = req.body;
+
+    if (!image || !style) {
+      return res.status(400).json({ error: "Missing image or style" });
+    }
 
     const HF_API_KEY = process.env.HF_API_KEY;
 
-    const model = "runwayml/stable-diffusion-v1-5";
+    const prompt = `${style} style portrait of a person, high quality`;
 
     const response = await fetch(
-      `https://api-inference.huggingface.co/models/${model}`,
+      "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
       {
         method: "POST",
         headers: {
@@ -19,18 +27,17 @@ module.exports = async (req, res) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          inputs: `${style} style portrait of a person`
+          inputs: prompt
         }),
       }
     );
 
-    const result = await response.arrayBuffer();
-    const base64 = Buffer.from(result).toString("base64");
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
 
     return res.status(200).json({ image: base64 });
 
-  } catch (err) {
-    console.error("ERROR:", err);
-    return res.status(500).json({ error: err.message });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };
