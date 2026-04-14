@@ -9,8 +9,10 @@ module.exports = async (req, res) => {
     const { image, style } = req.body;
     const HF_API_KEY = process.env.HF_API_KEY;
 
-    // Switching to SDXL - the most reliable free router model
+    // Use the SDXL base model, which is highly reliable on the free router
     const modelUrl = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0";
+
+    const base64Data = image.split(',')[1];
 
     const response = await fetch(modelUrl, {
       method: "POST",
@@ -19,8 +21,11 @@ module.exports = async (req, res) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        inputs: `A ${style} style digital portrait, high quality, masterpiece`,
-        parameters: { negative_prompt: "blurry, distorted, low quality" }
+        inputs: `A professional ${style} style digital art portrait, masterpiece, high detail`,
+        parameters: {
+          image: base64Data, // Image-to-image parameter for SDXL
+          strength: 0.5      // Keeps the core face recognizable
+        }
       })
     });
 
