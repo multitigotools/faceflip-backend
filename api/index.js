@@ -16,21 +16,31 @@ module.exports = async (req, res) => {
 
     const HF_API_KEY = process.env.HF_API_KEY;
 
-    const prompt = `${style} style portrait of a person, high quality`;
+    const prompt = `A ${style} style digital art portrait, highly detailed, 4k, professional`;
 
-    const response = await fetch(
-      "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${HF_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: prompt
-        }),
-      }
-    );
+   let response;
+
+for (let i = 0; i < 3; i++) {
+  response = await fetch(
+    "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${HF_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+      }),
+    }
+  );
+
+  if (response.status === 503) {
+    await new Promise(r => setTimeout(r, 5000));
+  } else {
+    break;
+  }
+}
     // 👇 ADD THIS BLOCK (VERY IMPORTANT)
 const contentType = response.headers.get("content-type");
 
