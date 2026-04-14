@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
 
 for (let i = 0; i < 3; i++) {
   response = await fetch(
-    "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2",
+   "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-2",
     {
       method: "POST",
       headers: {
