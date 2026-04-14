@@ -31,6 +31,13 @@ module.exports = async (req, res) => {
         }),
       }
     );
+    // 👇 ADD THIS BLOCK (VERY IMPORTANT)
+const contentType = response.headers.get("content-type");
+
+if (contentType && contentType.includes("application/json")) {
+  const error = await response.json();
+  return res.status(500).json({ error });
+}
 
     const buffer = await response.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
