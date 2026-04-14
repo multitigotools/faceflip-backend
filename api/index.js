@@ -9,45 +9,35 @@ module.exports = async (req, res) => {
     const { image, style } = req.body;
     const HF_API_KEY = process.env.HF_API_KEY;
 
-    // Remove the data URL prefix (e.g., "data:image/png;base64,")
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    // Use the new stable router URL
+    const modelUrl = "https://router.huggingface.co/hf-inference/models/runwayml/stable-diffusion-v1-5";
 
-    const response = await fetch(
-      "https://https://router.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${HF_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: base64Data, // The image itself is the input
-          parameters: {
-            prompt: `A professional ${style} digital art portrait, highly detailed, 4k`,
-            num_inference_steps: 30,
-            strength: 0.6 // 0.6 keeps 40% of your original face and 60% AI style
-          },
-        })
-      }
-    );
+    // Clean the base64 and convert it back to a Buffer for binary transmission
+    const base64Data = image.split(',')[1];
+    const imageBuffer = Buffer.from(base64Data, 'base64');
 
-    // If the model is still loading
-    if (response.status === 503) {
-      return res.status(503).json({ error: "Model is starting up. Try again in 20 seconds." });
+    const response = await fetch(modelUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${HF_API_KEY}`,
+        "Content-Type": "image/jpeg", // Sending raw image data is more reliable
+        "x-use-cache": "false"
+      },
+      body: imageBuffer,
+      // Pass style parameters as custom headers if supported, or stick to default prompt
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).json({ error: "HF Error", details: errorText });
     }
 
     const buffer = await response.arrayBuffer();
     const outputBase64 = Buffer.from(buffer).toString("base64");
 
-    // Check if the output is actually an image or just a JSON error message
-    if (outputBase64.length < 500) { 
-        const textError = Buffer.from(buffer).toString();
-        return res.status(500).json({ error: "AI Error", details: textError });
-    }
-
     return res.status(200).json({ image: outputBase64 });
 
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "fetch failed", details: error.message });
   }
 };
